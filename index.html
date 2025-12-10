@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartLease Planner V18.2 - 9 Model Kenderaan Komersial</title>
+    
+    <style>
+        /* Tetapan Warna Baharu (Dikekalkan) */
+        :root {
+            --lightest-green: #F4FFF4; /* Soft Green Sangat Cerah */
+            --dark-green: #385A38;     /* Header Dark Green */
+            --white: #FFFFFF;
+            --black: #333333;
+            --mid-green: #6C8E58;      
+            --contrast-blue: #0056B3;  /* Untuk Nota Kadar Faedah */
+            --compare-color-1: #79B4A9; /* Warna Bar Graf 1 (Harmoni) */
+            --compare-color-2: #A9874D; /* Warna Mula Pengiraan (Kontra/Harmoni) */
+            --compare-color-3: #4A6D7C; /* Warna Bar Graf 2 (Harmoni) */
+            --view-schedule-btn: #3D88AA; /* Biru Untuk Butang Lihat Jadual */
+            --lowest-highlight: #CCFFCC; /* Latar Belakang Row Terbaik */
+        }
+
+        /* Tetapan Global */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--lightest-green); 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 950px;
+            width: 100%;
+            background-color: var(--white);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); 
+            border-radius: 18px; 
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: var(--dark-green); 
+            padding: 20px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 5px;
+            color: var(--white);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        header p {
+            color: rgba(255, 255, 255, 0.9); 
+            font-weight: 500;
+        }
+
+        /* Togol Bahasa */
+        #languageToggle {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            z-index: 10;
+        }
+        
+        .lang-btn {
+            background: none;
+            border: 1px solid var(--white);
+            color: var(--white);
+            padding: 5px 8px;
+            cursor: pointer;
+            border-radius: 5px;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+            font-size: 0.8em;
+            margin-left: 3px;
+        }
+        
+        .lang-btn.active {
+            opacity: 1;
+            font-weight: bold;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* MUKA DEPAN (Landing Page) */
+        #landingPage {
+            padding: 50px 40px;
+            text-align: center;
+        }
+
+        #landingPage h2 {
+            font-size: 2em;
+            color: var(--dark-green);
+            margin-bottom: 20px;
+        }
+        
+        #landingPage p {
+            color: var(--black);
+            margin-bottom: 30px;
+            line-height: 1.6;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Butang Mula Pengiraan */
+        .start-btn {
+            background-color: var(--compare-color-2); 
+            color: var(--white);
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .start-btn:hover {
+            background-color: #8C6A34; 
+        }
+
+        .calculator-card {
+            display: none; 
+            padding: 40px;
+            gap: 40px;
+            position: relative;
+        }
+
+        /* Butang Back to Home */
+        .back-to-home {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: var(--mid-green);
+            color: var(--white);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s;
+            z-index: 10;
+        }
+        .back-to-home:hover {
+            background-color: var(--dark-green);
+        }
+        
+        .input-section {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .results-section {
+            flex: 2;
+        }
+
+        .calculator-card h2 {
+            color: var(--black);
+            border-bottom: 2px solid var(--mid-green);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--black);
+        }
+
+        .input-group input, 
+        .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        .input-info {
+            font-size: 0.8em;
+            color: var(--contrast-blue);
+            margin-top: 5px;
+        }
+
+        /* Butang Kira & Bandingkan (Dark Green) */
+        .calculate-btn {
+            background-color: var(--dark-green); 
+            color: var(--white);
+            border: none;
+            padding: 15px 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+
+        .calculate-btn:hover {
+            background-color: var(--mid-green);
+            color: var(--white);
+        }
+
+        /* Results Table Styling */
+        #comparisonTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        #comparisonTable th, #comparisonTable td {
+            padding: 10px 10px; 
+            text-align: right;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        #comparisonTable th:nth-child(1), #comparisonTable td:nth-child(1) {
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        .payment-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+        }
+
+        .payment-amount {
+            font-weight: bold;
+        }
+        
+        /* Latar Belakang Bank Terbaik */
+        .lowest-payment {
+            background-color: var(--lowest-highlight);
+        }
+        .lowest-payment .payment-amount {
+            color: var(--dark-green);
+        }
+        
+        #comparisonTable thead th {
+            background-color: var(--dark-green);
+            color: var(--white);
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        #comparisonTable tbody tr:nth-child(odd) {
+            background-color: var(--lightest-green);
+        }
+        
+        /* Modal Styling */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding-top: 20px;
+        }
+
+        .modal-content {
+            background-color: var(--white);
+            margin: 5% auto; 
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 900px;
+            border-radius: 10px;
+            position: relative;
+        }
+        
+        /* Jadual Pelunasan */
+        #amortizationTableContainer {
+            max-height: 450px;
+            overflow-y: scroll;
+            overflow-x: hidden;
+        }
+        
+        #amortizationTable {
+            width: 100%; 
+            border-collapse: collapse;
+            font-size: 0.85em;
+        }
+        
+        #amortizationTable th, #amortizationTable td {
+            border: 1px solid #ddd;
+            padding: 8px 5px; 
+            text-align: right;
+            width: auto;
+            white-space: nowrap;
+        }
+        
+        #amortizationTable th {
+            background-color: var(--dark-green);
+            color: var(--white);
+            position: sticky; 
+            top: 0;
+        }
+        
+        /* Butang Lihat Jadual */
+        .btn-view-schedule {
+            background-color: var(--view-schedule-btn);
+            color: var(--white);
+            border: none;
+            padding: 5px 8px; 
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 0.8em;
+            white-space: nowrap;
+        }
+
+        .btn-view-schedule:hover {
+            background-color: #306C88;
+        }
+
+        /* Gaya Graf */
+        .chart-container {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ccc;
+        }
+        .chart-container h3 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: var(--black);
+        }
+        .chart-bar-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .chart-bar {
+            display: flex;
+            align-items: center;
+            height: 40px;
+            background-color: var(--lightest-green);
+            border-radius: 5px;
+            position: relative;
+            padding-right: 120px; 
+        }
+        .bar-label {
+            width: 110px;
+            font-weight: bold;
+            padding-left: 10px;
+            font-size: 0.9em;
+            text-align: left;
+            z-index: 3; 
+            color: var(--black);
+            white-space: nowrap;
+        }
+        /* Bar Chart Warna Harmoni */
+        .bar-fill-interest {
+            height: 100%;
+            background-color: var(--compare-color-1); 
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 1;
+            transition: width 1s ease-out;
+            border-radius: 5px;
+        }
+        .bar-fill-monthly {
+            height: 100%;
+            background-color: var(--compare-color-3); 
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 1;
+            transition: width 1s ease-out;
+            border-radius: 5px;
+        }
+
+        .bar-value {
+            position: absolute;
+            right: 0; 
+            font-size: 0.9em;
+            font-weight: bold;
+            z-index: 3; 
+            color: var(--black);
+            width: 110px;
+            text-align: right;
+            background-color: var(--lightest-green);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+
+        /* Gaya Nota Penting (Warna Kontra Biru) */
+        .rate-note {
+            font-size: 0.8em;
+            color: var(--contrast-blue); 
+            margin-top: 5px;
+            font-style: italic;
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        footer {
+            background-color: var(--black);
+            color: var(--white);
+            text-align: center;
+            /* Padding dikekalkan, cuma kandungan dibuang */
+            padding: 15px; 
+            font-size: 0.9em;
+        }
+        /* Penyesuaian Footer: Hanya Teks Kadar */
+        footer p {
+            /* Perlu kekalkan tag <p> jika footer padding dikekalkan, tapi isinya dikosongkan */
+            margin: 0; 
+        }
+
+        @media (max-width: 768px) {
+            .calculator-card {
+                flex-direction: column;
+                gap: 20px;
+                padding: 20px;
+            }
+            .modal-content {
+                width: 95%;
+                margin: 20px auto;
+            }
+            .chart-bar {
+                padding-right: 100px;
+            }
+            .bar-value {
+                width: 100px;
+            }
+            .hide-small {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div id="languageToggle">
+                <button class="lang-btn active" data-lang="ms" onclick="setLanguage('ms')">BM</button>
+                <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">EN</button>
+            </div>
+            <h1 data-ms="SMARTLEASE PLANNER" data-en="SMARTLEASE PLANNER">SMARTLEASE PLANNER</h1>
+            <p data-ms="Pilihan Pintar, Sewa Beli Lebih Cekap" data-en="Smart Choices, Smarter Leasing">Pilihan Pintar, Sewa Beli Lebih Cekap</p>
+        </header>
+        
+        <div id="landingPage">
+            <h2 data-ms="Selamat Datang ke SmartLease Planner" data-en="Welcome to SmartLease Planner">Selamat Datang ke SmartLease Planner</h2>
+            <p data-ms="SmartLease Planner ialah kalkulator sewa beli yang membantu anda mengira bayaran bulanan dan membandingkan kadar pembiayaan dengan cepat dan mudah sebelum membeli kenderaan komersial anda." data-en="SmartLease Planner is a hire purchase calculator that helps you quickly and easily calculate monthly payments and compare financing rates before purchasing your commercial vehicle.">SmartLease Planner ialah kalkulator sewa beli yang membantu anda mengira bayaran bulanan dan membandingkan kadar pembiayaan dengan cepat dan mudah sebelum membeli kenderaan komersial anda.</p>
+            <button class="start-btn" data-ms="Mula Pengiraan Kenderaan Anda" data-en="Start Your Vehicle Calculation" onclick="showCalculator()">Mula Pengiraan Kenderaan Anda</button>
+        </div>
+
+        <main id="calculatorCard" class="calculator-card">
+            <button class="back-to-home" data-ms="Kembali ke Laman Utama" data-en="Back to Home" onclick="showHome()">Kembali ke Laman Utama</button>
+
+            <div class="input-section">
+                <h2 data-ms="1. Masukkan Butiran Pinjaman" data-en="1. Enter Loan Details">1. Masukkan Butiran Pinjaman</h2>
+                <form id="leaseForm">
+                    
+                    <div class="input-group">
+                        <label for="carModel" data-ms="Pilih Kenderaan" data-en="Select Vehicle">Pilih Kenderaan</label>
+                        <select id="carModel" onchange="updatePrice()">
+                            <option value="0" data-model="none" data-ms="--- Pilih Model ---" data-en="--- Select Model ---">--- Pilih Model ---</option>
+                            <option value="155000" data-model="Starex">Hyundai Starex</option>
+                            <option value="125000" data-model="Urvan">Nissan Urvan</option>
+                            <option value="118000" data-model="Hiace">Toyota Hiace Panel</option>
+                            <option value="120000" data-model="Kaicene">Kaicene Era Star II</option>
+                            <option value="90000" data-model="GranMax">Daihatsu Gran Max</option>
+                            <option value="115000" data-model="NV200">Nissan NV200</option>
+                            <option value="130000" data-model="ViewC2">Foton View C2</option>
+                            <option value="145000" data-model="ViewCS2">Foton View CS2</option>
+                            <option value="150000" data-model="V80">Maxus V80</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="harga" data-ms="Harga Kenderaan (RM)" data-en="Vehicle Price (RM)">Harga Kenderaan (RM)</label>
+                        <input type="number" id="harga" placeholder="Contoh: 120000" min="1" required 
+                               oninput="calculateMinDeposit()">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="deposit" data-ms="Bayaran Pendahuluan (RM)" data-en="Down Payment (RM)">Bayaran Pendahuluan (RM)</label>
+                        <input type="number" id="deposit" placeholder="Minimum 10%" required>
+                        <p class="input-info" id="minDepositInfo"></p>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="tempoh" data-ms="Tempoh Pinjaman (Tahun)" data-en="Loan Tenure (Years)">Tempoh Pinjaman (Tahun)</label>
+                        <select id="tempoh" required>
+                            <option value="3" data-ms="3 Tahun" data-en="3 Years">3 Tahun</option>
+                            <option value="5" data-ms="5 Tahun" data-en="5 Years">5 Tahun</option>
+                            <option value="7" selected data-ms="7 Tahun" data-en="7 Years">7 Tahun</option>
+                            <option value="9" data-ms="9 Tahun" data-en="9 Years">9 Tahun</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="calculate-btn" data-ms="Kira & Bandingkan" data-en="Calculate & Compare">Kira & Bandingkan</button>
+                </form>
+            </div>
+
+            <div class="results-section">
+                <h2 data-ms="2. Jadual & Perbandingan Hasil" data-en="2. Results Table & Comparison">2. Jadual & Perbandingan Hasil</h2>
+                <p id="errorMsg" style="color: red; margin-bottom: 10px;"></p>
+                
+                <table id="comparisonTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th data-ms="Institusi Kewangan" data-en="Financial Institution">Institusi Kewangan</th>
+                            <th class="hide-small" data-ms="Kadar Faedah (%)" data-en="Interest Rate (%)">Kadar Faedah (%)</th>
+                            <th class="hide-small" data-ms="Jumlah Faedah (RM)" data-en="Total Interest (RM)">Jumlah Faedah (RM)</th>
+                            <th data-ms="Ansuran Bulanan (RM)" data-en="Monthly Payment (RM)">Ansuran Bulanan (RM)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="comparisonBody">
+                        </tbody>
+                </table>
+                <p class="rate-note" id="rateNote" style="display: none;" data-ms="*Nota: Kadar Faedah ini adalah purata anggaran bagi kenderaan komersial (2.55% hingga 2.775%) dan tertakluk kepada kelulusan akhir bank." data-en="*Note: This Interest Rate is an average estimate for commercial vehicles (2.55% to 2.775%) and is subject to final bank approval.">*Nota: Kadar Faedah ini adalah purata anggaran bagi kenderaan komersial (2.55% hingga 2.775%) dan tertakluk kepada kelulusan akhir bank.</p>
+                <p id="initialMsg" data-ms="Sila isi butiran pinjaman dan klik 'Kira & Bandingkan' untuk melihat hasilnya." data-en="Please fill in the loan details and click 'Calculate & Compare' to see the results.">Sila isi butiran pinjaman dan klik 'Kira & Bandingkan' untuk melihat hasilnya.</p>
+                
+                <div id="chartContainer" class="chart-container" style="display: none;">
+                    <h3 data-ms="Perbandingan Visual" data-en="Visual Comparison">Perbandingan Visual</h3>
+                    <div id="totalInterestChart"></div>
+                    <div style="margin-top: 20px;"></div>
+                    <div id="monthlyPaymentChart"></div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            </footer>
+    </div>
+
+    <div id="amortizationModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeAmortizationModal()">&times;</span>
+            <h3 id="modalTitle">Jadual Pelunasan Pinjaman</h3>
+            <p id="loanDetails"></p>
+            <div id="amortizationTableContainer">
+                <table id="amortizationTable">
+                    <thead>
+                        <tr>
+                            <th data-ms="Bulan" data-en="Month">Bulan</th>
+                            <th data-ms="Baki Awal (RM)" data-en="Starting Balance (RM)">Baki Awal (RM)</th>
+                            <th data-ms="Bayaran Bulanan (RM)" data-en="Monthly Payment (RM)">Bayaran Bulanan (RM)</th>
+                            <th data-ms="Bayaran Faedah (RM)" data-en="Interest Payment (RM)">Bayaran Faedah (RM)</th>
+                            <th data-ms="Baki Akhir (RM)" data-en="Ending Balance (RM)">Baki Akhir (RM)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="amortizationBody">
+                        </tbody>
+                </table>
+            </div>
+            <p id="modalFooterNote" style="margin-top: 15px; font-size: 0.9em;" data-ms="*Pengiraan ini adalah untuk tujuan ilustrasi sahaja berdasarkan kadar faedah rata. Bayaran Prinsipal = Bayaran Bulanan - Bayaran Faedah." data-en="*This calculation is for illustration purposes only based on a flat interest rate. Principal Payment = Monthly Payment - Interest Payment.">*Pengiraan ini adalah untuk tujuan ilustrasi sahaja berdasarkan kadar faedah rata. Bayaran Prinsipal = Bayaran Bulanan - Bayaran Faedah.</p>
+        </div>
+    </div>
+    
+    <script>
+        // DATA KADAR FAEDAH DIKEMAS KINI (Menggabungkan 9 Model)
+        const allBankRates = {
+            "Maybank": {
+                // Kadar 2.60% seragam untuk semua 9 model dan tempoh
+                "Starex": { 3: 2.60, 5: 2.60, 7: 2.60, 9: 2.60 }, 
+                "Urvan": { 3: 2.60, 5: 2.60, 7: 2.60, 9: 2.60 },
+                "Hiace": { 3: 2.60, 5: 2.60, 7: 2.60, 9: 2.60 },
+                "Kaicene": { 3: 2.60, 5: 2.60, 7: 2.60, 9: 2.60 },
+                "GranMax": { 3: 2.60, 5: 2.60, 7: 2.60, 9: 2.60 },
+                "NV200": { 3: 2.60, 5: 2.60, 7: 2.60, 9: 2.60 },
+                "ViewC2": { 3: 2.60, 5: 2.60, 7: 2.60, 9: 2.60 },
+                "ViewCS2": { 3: 2.60, 5: 2.60, 7: 2.60, 9: 2.60 },
+                "V80": { 3: 2.60, 5: 2.60, 7: 2.60, 9: 2.60 }
+            },
+            "CIMB Bank": {
+                // Kadar 2.675% seragam untuk semua 9 model dan tempoh
+                "Starex": { 3: 2.675, 5: 2.675, 7: 2.675, 9: 2.675 }, 
+                "Urvan": { 3: 2.675, 5: 2.675, 7: 2.675, 9: 2.675 },
+                "Hiace": { 3: 2.675, 5: 2.675, 7: 2.675, 9: 2.675 },
+                "Kaicene": { 3: 2.675, 5: 2.675, 7: 2.675, 9: 2.675 },
+                "GranMax": { 3: 2.675, 5: 2.675, 7: 2.675, 9: 2.675 },
+                "NV200": { 3: 2.675, 5: 2.675, 7: 2.675, 9: 2.675 },
+                "ViewC2": { 3: 2.675, 5: 2.675, 7: 2.675, 9: 2.675 },
+                "ViewCS2": { 3: 2.675, 5: 2.675, 7: 2.675, 9: 2.675 },
+                "V80": { 3: 2.675, 5: 2.675, 7: 2.675, 9: 2.675 }
+            },
+            "Public Bank": {
+                // Kadar 2.55% seragam untuk semua 9 model dan tempoh (KADAR TERENDAH)
+                "Starex": { 3: 2.55, 5: 2.55, 7: 2.55, 9: 2.55 }, 
+                "Urvan": { 3: 2.55, 5: 2.55, 7: 2.55, 9: 2.55 },
+                "Hiace": { 3: 2.55, 5: 2.55, 7: 2.55, 9: 2.55 },
+                "Kaicene": { 3: 2.55, 5: 2.55, 7: 2.55, 9: 2.55 },
+                "GranMax": { 3: 2.55, 5: 2.55, 7: 2.55, 9: 2.55 },
+                "NV200": { 3: 2.55, 5: 2.55, 7: 2.55, 9: 2.55 },
+                "ViewC2": { 3: 2.55, 5: 2.55, 7: 2.55, 9: 2.55 },
+                "ViewCS2": { 3: 2.55, 5: 2.55, 7: 2.55, 9: 2.55 },
+                "V80": { 3: 2.55, 5: 2.55, 7: 2.55, 9: 2.55 }
+            },
+            "Hong Leong Bank": {
+                // Kadar 2.725% seragam untuk semua 9 model dan tempoh
+                "Starex": { 3: 2.725, 5: 2.725, 7: 2.725, 9: 2.725 }, 
+                "Urvan": { 3: 2.725, 5: 2.725, 7: 2.725, 9: 2.725 },
+                "Hiace": { 3: 2.725, 5: 2.725, 7: 2.725, 9: 2.725 },
+                "Kaicene": { 3: 2.725, 5: 2.725, 7: 2.725, 9: 2.725 },
+                "GranMax": { 3: 2.725, 5: 2.725, 7: 2.725, 9: 2.725 },
+                "NV200": { 3: 2.725, 5: 2.725, 7: 2.725, 9: 2.725 },
+                "ViewC2": { 3: 2.725, 5: 2.725, 7: 2.725, 9: 2.725 },
+                "ViewCS2": { 3: 2.725, 5: 2.725, 7: 2.725, 9: 2.725 },
+                "V80": { 3: 2.725, 5: 2.725, 7: 2.725, 9: 2.725 }
+            },
+            "RHB Bank": {
+                // Kadar 2.775% seragam untuk semua 9 model dan tempoh (KADAR TERTINGGI)
+                "Starex": { 3: 2.775, 5: 2.775, 7: 2.775, 9: 2.775 }, 
+                "Urvan": { 3: 2.775, 5: 2.775, 7: 2.775, 9: 2.775 },
+                "Hiace": { 3: 2.775, 5: 2.775, 7: 2.775, 9: 2.775 },
+                "Kaicene": { 3: 2.775, 5: 2.775, 7: 2.775, 9: 2.775 },
+                "GranMax": { 3: 2.775, 5: 2.775, 7: 2.775, 9: 2.775 },
+                "NV200": { 3: 2.775, 5: 2.775, 7: 2.775, 9: 2.775 },
+                "ViewC2": { 3: 2.775, 5: 2.775, 7: 2.775, 9: 2.775 },
+                "ViewCS2": { 3: 2.775, 5: 2.775, 7: 2.775, 9: 2.775 },
+                "V80": { 3: 2.775, 5: 2.775, 7: 2.775, 9: 2.775 }
+            }
+        };
+
+        let currentLang = 'ms'; 
+
+        const formatNombor = (nombor) => {
+            if (isNaN(nombor)) return "N/A";
+            const value = Math.max(0, nombor); 
+            return value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        };
+        
+        function showCalculator() {
+            document.getElementById('landingPage').style.display = 'none';
+            document.getElementById('calculatorCard').style.display = 'flex';
+        }
+
+        function showHome() {
+            document.getElementById('calculatorCard').style.display = 'none';
+            document.getElementById('landingPage').style.display = 'block';
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            const elements = document.querySelectorAll('[data-ms], [data-en]');
+            elements.forEach(el => {
+                const text = el.getAttribute(`data-${lang}`);
+                if (text) {
+                    el.textContent = text;
+                }
+            });
+            
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.lang-btn[data-lang="${lang}"]`).classList.add('active');
+            
+            const hargaInput = document.getElementById('harga');
+            const placeholderText = (lang === 'ms') ? 'Contoh: 120000' : 'Example: 120000'; 
+            hargaInput.placeholder = placeholderText;
+
+            calculateMinDeposit();
+            
+            if (document.getElementById('comparisonTable').style.display !== 'none') {
+                document.getElementById('leaseForm').dispatchEvent(new Event('submit'));
+            }
+        }
+
+
+        // FUNGSI: Jana Jadual Pelunasan (Dikekalkan)
+        function generateAmortizationSchedule(loanAmount, monthlyPayment, totalMonths, flatInterestRate) {
+            const schedule = [];
+            let remainingBalance = loanAmount;
+            const annualFlatInterest = (loanAmount * (flatInterestRate / 100));
+            const monthlyFlatInterest = annualFlatInterest / 12; 
+
+            for (let month = 1; month <= totalMonths; month++) {
+                const interestPayment = monthlyFlatInterest; 
+                let principalPayment = monthlyPayment - interestPayment;
+                
+                if (remainingBalance < principalPayment) {
+                    principalPayment = remainingBalance;
+                }
+                
+                const beginningBalance = remainingBalance;
+                remainingBalance -= principalPayment;
+                const endingBalance = remainingBalance < 0 ? 0 : remainingBalance; 
+
+                schedule.push({
+                    month: month,
+                    beginningBalance: beginningBalance,
+                    monthlyPayment: month === totalMonths ? (beginningBalance + interestPayment) : monthlyPayment,
+                    interestPayment: interestPayment,
+                    endingBalance: endingBalance
+                });
+            }
+            return schedule;
+        }
+
+        // FUNGSI: Paparkan Jadual Pelunasan dalam Modal (Dikekalkan)
+        function displayAmortizationModal(schedule, bankName, monthlyPayment, totalMonths) {
+            const modal = document.getElementById('amortizationModal');
+            const modalTitleEl = document.getElementById('modalTitle');
+            const loanDetailsEl = document.getElementById('loanDetails');
+            const amortizationBodyEl = document.getElementById('amortizationBody');
+
+            const monthText = currentLang === 'ms' ? 'Bulan' : 'Months';
+
+            modalTitleEl.textContent = `${currentLang === 'ms' ? 'Jadual Pelunasan' : 'Amortization Schedule'} - ${bankName}`;
+            loanDetailsEl.innerHTML = `${currentLang === 'ms' ? 'Bayaran Bulanan' : 'Monthly Payment'}: **RM ${formatNombor(monthlyPayment)}** | ${currentLang === 'ms' ? 'Tempoh' : 'Tenure'}: **${totalMonths} ${monthText}**`;
+            amortizationBodyEl.innerHTML = '';
+            
+            document.querySelector('#amortizationTable th[data-ms="Bulan"]').textContent = currentLang === 'ms' ? 'Bulan' : 'Month';
+            document.querySelector('#amortizationTable th[data-ms="Baki Awal (RM)"]').textContent = currentLang === 'ms' ? 'Baki Awal (RM)' : 'Starting Balance (RM)';
+            document.querySelector('#amortizationTable th[data-ms="Bayaran Bulanan (RM)"]').textContent = currentLang === 'ms' ? 'Bayaran Bulanan (RM)' : 'Monthly Payment (RM)';
+            document.querySelector('#amortizationTable th[data-ms="Bayaran Faedah (RM)"]').textContent = currentLang === 'ms' ? 'Bayaran Faedah (RM)' : 'Interest Payment (RM)';
+            document.querySelector('#amortizationTable th[data-ms="Baki Akhir (RM)"]').textContent = currentLang === 'ms' ? 'Baki Akhir (RM)' : 'Ending Balance (RM)';
+            document.getElementById('modalFooterNote').textContent = currentLang === 'ms' ? '*Pengiraan ini adalah untuk tujuan ilustrasi sahaja berdasarkan kadar faedah rata. Bayaran Prinsipal = Bayaran Bulanan - Bayaran Faedah.' : '*This calculation is for illustration purposes only based on a flat interest rate. Principal Payment = Monthly Payment - Interest Payment.';
+
+
+            schedule.forEach(item => {
+                const row = amortizationBodyEl.insertRow();
+                row.insertCell().textContent = item.month;
+                row.insertCell().textContent = formatNombor(item.beginningBalance);
+                row.insertCell().textContent = formatNombor(item.monthlyPayment);
+                row.insertCell().textContent = formatNombor(item.interestPayment);
+                row.insertCell().textContent = formatNombor(item.endingBalance);
+            });
+
+            modal.style.display = 'block';
+        }
+
+        function closeAmortizationModal() {
+            document.getElementById('amortizationModal').style.display = 'none';
+        }
+
+        function calculateMinDeposit() {
+            const hargaKereta = parseFloat(document.getElementById('harga').value);
+            const minDepositInfoEl = document.getElementById('minDepositInfo');
+            const depositInput = document.getElementById('deposit');
+            const infoText = currentLang === 'ms' ? 'Deposit minimum yang dicadangkan (10%):' : 'Minimum suggested deposit (10%):';
+
+
+            if (hargaKereta > 0) {
+                const minDeposit = hargaKereta * 0.10;
+                minDepositInfoEl.textContent = `${infoText} RM ${formatNombor(minDeposit)}`;
+                
+                if (depositInput.value === "" || parseFloat(depositInput.value) < minDeposit) {
+                    depositInput.value = minDeposit.toFixed(0); 
+                }
+            } else {
+                minDepositInfoEl.textContent = "";
+            }
+        }
+        
+        function updatePrice() {
+            const modelSelect = document.getElementById('carModel');
+            const hargaInput = document.getElementById('harga');
+            const selectedOption = modelSelect.options[modelSelect.selectedIndex];
+            const selectedPrice = selectedOption.value;
+            
+            if (selectedPrice !== "0") {
+                hargaInput.value = selectedPrice;
+            } else {
+                hargaInput.value = ""; 
+            }
+            calculateMinDeposit(); 
+        }
+
+        // FUNGSI: Jana Graf Bar (Dikekalkan)
+        function generateBarChart(elementId, titleKey, results, valueKey, barFillClass) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+            
+            const resultsData = results.map(r => r[valueKey]);
+            const maxValue = Math.max(...resultsData);
+            
+            const title = currentLang === 'ms' ? 
+                          (titleKey === 'interest' ? 'Perbandingan Jumlah Faedah Dibayar' : 'Perbandingan Ansuran Bulanan') : 
+                          (titleKey === 'interest' ? 'Comparison of Total Interest Paid' : 'Comparison of Monthly Installments');
+
+            let chartTitle = document.createElement('h4');
+            chartTitle.textContent = title;
+            container.appendChild(chartTitle);
+
+            const barGroup = document.createElement('div');
+            barGroup.classList.add('chart-bar-group');
+
+            results.forEach((result) => {
+                const percentage = (result[valueKey] / maxValue) * 100;
+                
+                const bar = document.createElement('div');
+                bar.classList.add('chart-bar');
+
+                const label = document.createElement('div');
+                label.classList.add('bar-label');
+                label.textContent = result.name.split('(')[0].trim();
+
+                const fill = document.createElement('div');
+                fill.classList.add(barFillClass); 
+                fill.style.width = `${Math.max(5, Math.min(100, percentage))}%`; 
+
+                const valueDisplay = document.createElement('div');
+                valueDisplay.classList.add('bar-value');
+                valueDisplay.textContent = `RM ${formatNombor(result[valueKey])}`;
+                
+                bar.appendChild(fill);
+                bar.appendChild(label);
+                bar.appendChild(valueDisplay);
+                barGroup.appendChild(bar);
+            });
+
+            container.appendChild(barGroup);
+        }
+
+        // FUNGSI UTAMA: Kira dan Bandingkan
+        function kiraDanBandingkan(event) {
+            event.preventDefault(); 
+
+            let hargaKereta = parseFloat(document.getElementById('harga').value);
+            let deposit = parseFloat(document.getElementById('deposit').value);
+            let tempohTahunKey = document.getElementById('tempoh').value; 
+            let tempohTahun = parseInt(tempohTahunKey);
+            
+            const modelSelect = document.getElementById('carModel');
+            const selectedOption = modelSelect.options[modelSelect.selectedIndex];
+            const selectedModel = selectedOption.getAttribute('data-model');
+
+            const errorMsgEl = document.getElementById('errorMsg');
+            const comparisonBodyEl = document.getElementById('comparisonBody');
+            const comparisonTableEl = document.getElementById('comparisonTable');
+            const initialMsgEl = document.getElementById('initialMsg');
+            const chartContainerEl = document.getElementById('chartContainer');
+            const rateNoteEl = document.getElementById('rateNote');
+
+            errorMsgEl.textContent = "";
+            comparisonBodyEl.innerHTML = "";
+            comparisonTableEl.style.display = 'none';
+            initialMsgEl.style.display = 'block';
+            chartContainerEl.style.display = 'none';
+            rateNoteEl.style.display = 'none';
+
+            // Semak ralat
+            if (selectedModel === "none" || isNaN(hargaKereta) || isNaN(deposit) || isNaN(tempohTahun) || hargaKereta <= 0 || tempohTahun <= 0) {
+                errorMsgEl.textContent = currentLang === 'ms' ? "RALAT: Sila pilih model kenderaan dan masukkan semua nilai dengan sah." : "ERROR: Please select a vehicle model and enter all values validly.";
+                return;
+            }
+            if (deposit >= hargaKereta) {
+                errorMsgEl.textContent = currentLang === 'ms' ? "RALAT: Bayaran Pendahuluan mesti kurang daripada Harga Kenderaan." : "ERROR: Down Payment must be less than Vehicle Price.";
+                return;
+            }
+
+            let amaunPinjaman = hargaKereta - deposit;
+            let ansuranPalingRendah = Infinity;
+            let bankPalingRendahResult = null;
+            
+            const results = [];
+            const bankNames = Object.keys(allBankRates);
+
+            bankNames.forEach((bankName) => {
+                const bankData = allBankRates[bankName];
+                const modelRates = bankData[selectedModel];
+                const kadarFaedah = modelRates ? modelRates[tempohTahunKey] : undefined; 
+
+                if (kadarFaedah === undefined) {
+                    return; 
+                }
+
+                // Pengiraan Faedah Rata (Flat Rate)
+                let jumlahFaedah = amaunPinjaman * (kadarFaedah / 100) * tempohTahun;
+                let ansuranBulanan = (amaunPinjaman + jumlahFaedah) / (tempohTahun * 12);
+                
+                const result = {
+                    name: bankName,
+                    rate: kadarFaedah,
+                    loanAmount: amaunPinjaman,
+                    interest: jumlahFaedah,
+                    monthlyPayment: ansuranBulanan,
+                    totalMonths: tempohTahun * 12
+                };
+
+                results.push(result);
+
+                if (ansuranBulanan < ansuranPalingRendah) {
+                    ansuranPalingRendah = ansuranBulanan;
+                    bankPalingRendahResult = result;
+                }
+            });
+            
+            if (results.length === 0) {
+                 errorMsgEl.textContent = currentLang === 'ms' ? "RALAT: Tiada kadar faedah ditemui untuk kombinasi ini." : "ERROR: No interest rate found for this combination.";
+                 return;
+            }
+
+            // 3. Paparkan Hasil dalam Jadual
+            results.sort((a, b) => a.monthlyPayment - b.monthlyPayment);
+
+            results.forEach((result) => {
+                const isLowest = result === bankPalingRendahResult;
+                const row = comparisonBodyEl.insertRow();
+                
+                row.insertCell().textContent = result.name; 
+                row.insertCell().textContent = `${result.rate.toFixed(3)} %`; 
+                row.cells[1].classList.add('hide-small'); 
+                row.insertCell().textContent = formatNombor(result.interest);
+                row.cells[2].classList.add('hide-small'); 
+                
+                const paymentCell = row.insertCell();
+                paymentCell.classList.add('payment-cell');
+
+                const paymentAmount = document.createElement('span');
+                paymentAmount.classList.add('payment-amount');
+                paymentAmount.textContent = formatNombor(result.monthlyPayment);
+                paymentCell.appendChild(paymentAmount);
+                
+                const button = document.createElement('button');
+                button.textContent = currentLang === 'ms' ? 'Lihat Jadual' : 'View Schedule';
+                button.classList.add('btn-view-schedule');
+                button.onclick = () => {
+                    const schedule = generateAmortizationSchedule(result.loanAmount, result.monthlyPayment, result.totalMonths, result.rate);
+                    displayAmortizationModal(schedule, result.name, result.monthlyPayment, result.totalMonths);
+                };
+                paymentCell.appendChild(button);
+                
+                if (isLowest) {
+                    row.classList.add('lowest-payment');
+                    row.cells[0].textContent += ' ⭐'; // ⭐ Pin untuk bank terbaik
+                }
+            });
+            
+            // Kemas kini tajuk jadual mengikut bahasa semasa
+            document.querySelector('#comparisonTable th[data-ms="Institusi Kewangan"]').textContent = currentLang === 'ms' ? 'Institusi Kewangan' : 'Financial Institution';
+            document.querySelector('#comparisonTable th[data-ms="Kadar Faedah (%)"]').textContent = currentLang === 'ms' ? 'Kadar Faedah (%)' : 'Interest Rate (%)';
+            document.querySelector('#comparisonTable th[data-ms="Jumlah Faedah (RM)"]').textContent = currentLang === 'ms' ? 'Jumlah Faedah (RM)' : 'Total Interest (RM)';
+            document.querySelector('#comparisonTable th[data-ms="Ansuran Bulanan (RM)"]').textContent = currentLang === 'ms' ? 'Ansuran Bulanan (RM)' : 'Monthly Payment (RM)';
+
+
+            // 4. Paparkan Graf
+            generateBarChart('totalInterestChart', 'interest', results, 'interest', 'bar-fill-interest');
+            generateBarChart('monthlyPaymentChart', 'monthly', results, 'monthlyPayment', 'bar-fill-monthly');
+
+            comparisonTableEl.style.display = 'table';
+            chartContainerEl.style.display = 'block'; 
+            rateNoteEl.style.display = 'block'; 
+            initialMsgEl.style.display = 'none';
+        }
+
+        document.getElementById('leaseForm').addEventListener('submit', kiraDanBandingkan);
+        
+        document.addEventListener('DOMContentLoaded', () => {
+             document.getElementById('calculatorCard').style.display = 'none';
+             document.getElementById('landingPage').style.display = 'block';
+             setLanguage('ms'); // Tetapkan bahasa lalai semasa muatan
+             updatePrice();
+        });
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('amortizationModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
